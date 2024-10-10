@@ -1,4 +1,5 @@
 add_subdirectory(common)
+add_subdirectory(http)
 
 # target_link_libraries(common PUBLIC test_lib)
 
@@ -13,6 +14,7 @@ foreach(name ${BEAST_HTTP_TARGETS})
     PUBLIC
         # src
         beast_http_common
+        beast_http_http
 
         # package
         Threads::Threads
