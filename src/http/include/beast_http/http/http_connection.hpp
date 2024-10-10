@@ -56,10 +56,13 @@ private:
             {
                 if (ec)
                 {
+                    if (ec.value() == boost::asio::error::operation_aborted)
+                        return;
                     spdlog::warn("check_deadline failed, value: {}, message: {}", ec.value(), ec.message());
                     return;
                 }
 
+                spdlog::info("client timeout");
                 ec = self->m_socket.close(ec);
                 if (ec)
                 {
@@ -166,7 +169,7 @@ private:
     boost::beast::http::request<boost::beast::http::dynamic_body> m_request;
     boost::beast::http::response<boost::beast::http::dynamic_body> m_response;
 
-    static constexpr auto deadline_time = std::chrono::seconds(30);
+    static constexpr auto deadline_time = std::chrono::seconds(5);
     boost::asio::steady_timer m_deadline{m_socket.get_executor(), deadline_time};
 };
 
