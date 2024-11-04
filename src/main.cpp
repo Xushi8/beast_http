@@ -13,8 +13,10 @@ int main()
     setlocale(LC_ALL, ".utf-8");
     SetConsoleCP(CP_UTF8);
     SetConsoleOutputCP(CP_UTF8);
-#else
-    setlocale(LC_ALL, "");
+#elif  defined __linux__
+    setlocale(LC_ALL, "C.UTF-8");
+#elif defined __APPLE__
+    setlocale(LC_ALL, "UTF-8");
 #endif
 
     beast_http::set_default_log();
