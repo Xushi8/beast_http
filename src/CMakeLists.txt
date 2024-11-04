@@ -18,6 +18,8 @@ foreach(name ${BEAST_HTTP_TARGETS})
         OpenMP::OpenMP_CXX
         mimalloc
 
+        Boost::headers
+
         # external
     )
 
