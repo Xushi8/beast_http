@@ -1,9 +1,6 @@
 add_subdirectory(common)
 add_subdirectory(http)
 
-# target_link_libraries(common PUBLIC test_lib)
-
-
 set(BEAST_HTTP_TARGETS
     main
 )
@@ -19,16 +16,7 @@ foreach(name ${BEAST_HTTP_TARGETS})
         # package
         Threads::Threads
         OpenMP::OpenMP_CXX
-        TBB::tbb
         mimalloc
-
-
-        ${RE2_LIB}
-
-        ${GMP_LIB}
-        ${MPFR_LIB}
-
-        ${PQ_LIB}
 
         # external
     )
