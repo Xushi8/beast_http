@@ -11,15 +11,15 @@
 
 BEAST_HTTP_BEGIN_NAMESPACE
 
-size_t request_count()
+inline size_t request_count()
 {
     static std::atomic<size_t> cnt = 0;
     return cnt.fetch_add(1, std::memory_order_relaxed) + 1;
 }
 
-auto now()
+inline std::chrono::time_point<std::chrono::system_clock> now()
 {
-    return std::chrono::system_clock::now();
+    return std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now());
 }
 
 struct http_connection : public std::enable_shared_from_this<http_connection>
