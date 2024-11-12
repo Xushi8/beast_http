@@ -10,13 +10,13 @@
 int main()
 {
 #ifdef _WIN32
-    setlocale(LC_ALL, ".utf-8");
-    SetConsoleCP(CP_UTF8);
-    SetConsoleOutputCP(CP_UTF8);
+    setlocale(LC_ALL, ".utf-8"); // 设置语言编码为系统语言的 UTF-8
+    SetConsoleCP(CP_UTF8); // 设置输入为 UTF-8
+    SetConsoleOutputCP(CP_UTF8); // 设置输出为 UTF-8
 #elif  defined __linux__
-    setlocale(LC_ALL, "C.UTF-8");
+    setlocale(LC_ALL, "C.UTF-8"); // 最早为 Debian 的扩展, 现在 rpm 系也支持, 作用是将语言设置为 UTF-8
 #elif defined __APPLE__
-    setlocale(LC_ALL, "UTF-8");
+    setlocale(LC_ALL, "UTF-8"); // 将 Mac 语言编码设置为 UTF-8
 #endif
 
     beast_http::set_default_log();
