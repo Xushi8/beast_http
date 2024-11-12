@@ -35,25 +35,8 @@ add_link_options(-fdiagnostics-color=always)
 # warnings
 add_compile_options(-Wall -Wextra -pedantic -Wshadow -Wcast-qual -Wfloat-equal -Wredundant-decls -Wundef -Wpointer-arith -Werror=return-type -Wimplicit-fallthrough)
 add_link_options(-Wall -Wextra -pedantic -Wshadow -Wcast-qual -Wfloat-equal -Wredundant-decls -Wundef -Wpointer-arith -Werror=return-type -Wimplicit-fallthrough)
-# add_compile_options(-Wconversion -Wsign-conversion)
-# add_link_options(-Wconversion -Wsign-conversion)
-
-# optimize
-
-# add_compile_options(-fno-rtti)
-# add_link_options(-fno-rtti)
-
-# add_compile_options(-fno-semantic-interposition)
-# add_link_options(-fno-semantic-interposition)
-
-# add_compile_options(-ffast-math)
-# add_link_options(-ffast-math)
-
-# PGO
-# add_compile_options(-fprofile-generate=pgo_files)
-# add_link_options(-fprofile-generate=pgo_files)
-# add_compile_options(-fprofile-use=pgo_files)
-# add_link_options(-fprofile-use=pgo_files)
+add_compile_options(-Wconversion -Wsign-conversion)
+add_link_options(-Wconversion -Wsign-conversion)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_options(-fsanitize=undefined)
@@ -73,12 +56,4 @@ endif()
 
 if(BEAST_HTTP_STATIC_LIBCXX)
     add_link_options(-static-libstdc++)
-endif()
-
-
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    # add_compile_options(-fgraphite-identity -fdevirtualize-at-ltrans -fipa-pta -fuse-linker-plugin)
-    # add_link_options(-fgraphite-identity -fdevirtualize-at-ltrans -fipa-pta -fuse-linker-plugin)
-    # add_compile_options(-floop-nest-optimize)
-    # add_link_options(-floop-nest-optimize)
 endif()

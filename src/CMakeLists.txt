@@ -15,8 +15,6 @@ foreach(name ${BEAST_HTTP_TARGETS})
 
         # package
         Threads::Threads
-        OpenMP::OpenMP_CXX
-        mimalloc
 
         Boost::headers
 
