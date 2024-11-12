@@ -11,17 +11,31 @@
 
 BEAST_HTTP_BEGIN_NAMESPACE
 
+/**
+ * @brief 返回服务器一共接收了多少次询问, 线程安全
+ * 
+ * @return size_t 
+ */
 inline size_t request_count()
 {
     static std::atomic<size_t> cnt = 0;
     return cnt.fetch_add(1, std::memory_order_relaxed) + 1;
 }
 
+/**
+ * @brief 返回当前的时间戳
+ * 
+ * @return std::chrono::time_point<std::chrono::system_clock> 
+ */
 inline std::chrono::time_point<std::chrono::system_clock> now()
 {
     return std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now());
 }
 
+/**
+ * @brief 负责处理 http 连接
+ * 
+ */
 struct http_connection : public std::enable_shared_from_this<http_connection>
 {
     http_connection(boost::asio::ip::tcp::socket socket) :
@@ -36,6 +50,11 @@ struct http_connection : public std::enable_shared_from_this<http_connection>
     }
 
 private:
+    
+    /**
+     * @brief 异步地读取输入
+     * 
+     */
     void read_request()
     {
         boost::beast::http::async_read(m_socket, m_buffer, m_request, [self = shared_from_this()](boost::system::error_code ec, size_t bytes_transferred [[maybe_unused]])
@@ -50,6 +69,10 @@ private:
             });
     }
 
+    /**
+     * @brief 超时检测
+     * 
+     */
     void check_deadline()
     {
         m_deadline.async_wait([self = shared_from_this()](boost::system::error_code ec)
@@ -57,21 +80,25 @@ private:
                 if (ec)
                 {
                     if (ec.value() == boost::asio::error::operation_aborted) [[likely]]
-                        return;
-                    spdlog::warn("check_deadline failed, message: {}", ec.message());
-                    return;
-                }
-
-                spdlog::info("client timeout");
-                ec = self->m_socket.close(ec);
-                if (ec) [[unlikely]]
-                {
-                    spdlog::warn("check_deadline socket close failed, message: {}", ec.message());
-                    return;
+                    {
+                        ec = self->m_socket.close(ec);
+                        if (ec) [[unlikely]]
+                        {
+                            spdlog::warn("check_deadline socket close failed, message: {}", ec.message());
+                        }
+                    }
+                    else
+                    {
+                        spdlog::warn("check_deadline failed, message: {}", ec.message());
+                    }
                 }
             });
     }
 
+    /**
+     * @brief 处理请求
+     * 
+     */
     void process_request()
     {
         m_response.version(m_request.version());
@@ -93,6 +120,10 @@ private:
         write_response();
     }
 
+    /**
+     * @brief 处理 HTTP 参数
+     * 
+     */
     void create_response()
     {
         if (m_request.target() == "/count")
@@ -127,10 +158,14 @@ private:
         {
             m_response.result(boost::beast::http::status::not_found);
             m_response.set(boost::beast::http::field::content_type, "text/html");
-            boost::beast::ostream(m_response.body()) << "File not found\r\n";
+            boost::beast::ostream(m_response.body()) << "Path not found\r\n";
         }
     }
 
+    /**
+     * @brief 异步地返回信息
+     * 
+     */
     void write_response()
     {
         m_response.content_length(m_response.body().size());
@@ -148,7 +183,7 @@ private:
                 ec = self->m_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_send, ec);
                 if (ec) [[unlikely]]
                 {
-                    spdlog::warn("http connection shutdown failed, message: {}",  ec.message());
+                    spdlog::warn("http connection shutdown failed, message: {}", ec.message());
                     return;
                 }
 
@@ -173,6 +208,14 @@ private:
     boost::asio::steady_timer m_deadline{m_socket.get_executor(), deadline_time};
 };
 
+/**
+ * @brief 异步地监听连接请求
+ *
+ * @param acceptor
+ * @param socket
+ *
+ * 看起来像无限递归, 实际上并不是. 只有在上一个连接处理完毕之后才会继续递归, 因此至多同时存在两个函数调用
+ */
 inline void http_server(boost::asio::ip::tcp::acceptor& acceptor, boost::asio::ip::tcp::socket& socket)
 {
     acceptor.async_accept(socket, [&](boost::system::error_code ec)

@@ -19,7 +19,7 @@ int main()
     setlocale(LC_ALL, "UTF-8"); // 将 Mac 语言编码设置为 UTF-8
 #endif
 
-    beast_http::set_default_log();
+    beast_http::set_default_log({});
 
     boost::asio::io_context ctx;
     boost::asio::ip::tcp::acceptor acceptor{ctx, {boost::asio::ip::tcp::v6(), 9999}};
