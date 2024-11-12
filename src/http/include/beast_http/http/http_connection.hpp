@@ -40,9 +40,9 @@ private:
     {
         boost::beast::http::async_read(m_socket, m_buffer, m_request, [self = shared_from_this()](boost::system::error_code ec, size_t bytes_transferred [[maybe_unused]])
             {
-                if (ec)
+                if (ec) [[unlikely]]
                 {
-                    spdlog::warn("read request failed, value: {}, message: {}", ec.value(), ec.message());
+                    spdlog::warn("read request failed, message: {}", ec.message());
                     return;
                 }
 
@@ -56,17 +56,17 @@ private:
             {
                 if (ec)
                 {
-                    if (ec.value() == boost::asio::error::operation_aborted)
+                    if (ec.value() == boost::asio::error::operation_aborted) [[likely]]
                         return;
-                    spdlog::warn("check_deadline failed, value: {}, message: {}", ec.value(), ec.message());
+                    spdlog::warn("check_deadline failed, message: {}", ec.message());
                     return;
                 }
 
                 spdlog::info("client timeout");
                 ec = self->m_socket.close(ec);
-                if (ec)
+                if (ec) [[unlikely]]
                 {
-                    spdlog::warn("check_deadline socket close failed, value: {}, message: {}", ec.value(), ec.message());
+                    spdlog::warn("check_deadline socket close failed, message: {}", ec.message());
                     return;
                 }
             });
@@ -139,23 +139,23 @@ private:
             m_response,
             [self = shared_from_this()](boost::system::error_code ec, size_t)
             {
-                if (ec)
+                if (ec) [[unlikely]]
                 {
-                    spdlog::warn("write_response failed, value: {}, message: {}", ec.value(), ec.message());
+                    spdlog::warn("write_response failed, message: {}", ec.message());
                     return;
                 }
 
                 ec = self->m_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_send, ec);
-                if (ec)
+                if (ec) [[unlikely]]
                 {
-                    spdlog::warn("http connection shutdown failed, value: {}, message: {}", ec.value(), ec.message());
+                    spdlog::warn("http connection shutdown failed, message: {}",  ec.message());
                     return;
                 }
 
                 self->m_deadline.cancel(ec);
-                if (ec)
+                if (ec) [[unlikely]]
                 {
-                    spdlog::warn("http connection deadline cancel failed, value: {}, message: {}", ec.value(), ec.message());
+                    spdlog::warn("http connection deadline cancel failed, message: {}", ec.message());
                     return;
                 }
             });
@@ -173,13 +173,13 @@ private:
     boost::asio::steady_timer m_deadline{m_socket.get_executor(), deadline_time};
 };
 
-void http_server(boost::asio::ip::tcp::acceptor& acceptor, boost::asio::ip::tcp::socket& socket)
+inline void http_server(boost::asio::ip::tcp::acceptor& acceptor, boost::asio::ip::tcp::socket& socket)
 {
     acceptor.async_accept(socket, [&](boost::system::error_code ec)
         {
-            if (ec)
+            if (ec) [[unlikely]]
             {
-                spdlog::warn("Accept failed, value: {}, message: {}", ec.value(), ec.message());
+                spdlog::warn("Accept failed, message: {}", ec.message());
             }
             else
             {
